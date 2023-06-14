@@ -38,5 +38,20 @@ abstract class FlutterWebAuth2Platform extends PlatformInterface {
         contextArgs: contextArgs,
       );
 
+  Future<String> revokeToken({
+    required String url,
+    required String callbackUrlScheme,
+    required bool preferEphemeral,
+    String? redirectOriginOverride,
+    List contextArgs = const [],
+  }) =>
+      _instance.revokeToken(
+        url: url,
+        callbackUrlScheme: callbackUrlScheme,
+        preferEphemeral: preferEphemeral,
+        redirectOriginOverride: redirectOriginOverride,
+        contextArgs: contextArgs,
+      );
+
   Future clearAllDanglingCalls() => _instance.clearAllDanglingCalls();
 }

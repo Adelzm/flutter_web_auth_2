@@ -23,6 +23,22 @@ class FlutterWebAuth2MethodChannel extends FlutterWebAuth2Platform {
       '';
 
   @override
-  Future clearAllDanglingCalls() async =>
-      channel.invokeMethod('cleanUpDanglingCalls');
+  Future<String> revokeToken({
+    required String url,
+    required String callbackUrlScheme,
+    required bool preferEphemeral,
+    String? redirectOriginOverride,
+    List contextArgs = const [],
+  }) async =>
+      await channel.invokeMethod<String>('revokeToken', <String, dynamic>{
+        'url': url,
+        'callbackUrlScheme': callbackUrlScheme,
+        'preferEphemeral': preferEphemeral,
+        'redirectOriginOverride': redirectOriginOverride,
+        'contextArgs': contextArgs,
+      }) ??
+      '';
+
+  @override
+  Future clearAllDanglingCalls() async => channel.invokeMethod('cleanUpDanglingCalls');
 }

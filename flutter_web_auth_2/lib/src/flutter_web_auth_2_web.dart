@@ -27,9 +27,18 @@ class FlutterWebAuth2WebPlugin extends FlutterWebAuth2Platform {
           url: url,
           callbackUrlScheme: '',
           preferEphemeral: false,
-          redirectOriginOverride:
-              call.arguments['redirectOriginOverride']?.toString(),
+          redirectOriginOverride: call.arguments['redirectOriginOverride']?.toString(),
         );
+
+      case 'revokeToken':
+        final url = call.arguments['url'].toString();
+        return revokeToken(
+          url: url,
+          callbackUrlScheme: '',
+          preferEphemeral: false,
+          redirectOriginOverride: call.arguments['redirectOriginOverride']?.toString(),
+        );
+
       default:
         throw PlatformException(
           code: 'Unimplemented',
@@ -60,8 +69,7 @@ class FlutterWebAuth2WebPlugin extends FlutterWebAuth2Platform {
         try {
           final data = jsonDecode(messageEvent.data.toString());
           if (data['method'] == 'oauthDone') {
-            final appleAuth =
-                data['data']['authorization'] as Map<String, dynamic>?;
+            final appleAuth = data['data']['authorization'] as Map<String, dynamic>?;
             if (appleAuth != null) {
               final appleAuthQuery = Uri(queryParameters: appleAuth).query;
               return appleOrigin.replace(fragment: appleAuthQuery).toString();
@@ -71,6 +79,44 @@ class FlutterWebAuth2WebPlugin extends FlutterWebAuth2Platform {
           // ignore exception
         }
       }
+    }
+    throw PlatformException(
+      code: 'error',
+      message: 'Iterable window.onMessage is empty',
+    );
+  }
+
+  @override
+  Future<String> revokeToken({
+    required String url,
+    required String callbackUrlScheme,
+    required bool preferEphemeral,
+    String? redirectOriginOverride,
+    List contextArgs = const [],
+  }) async {
+    context.callMethod('open', <dynamic>[url] + contextArgs);
+    await for (final MessageEvent messageEvent in window.onMessage) {
+      if (messageEvent.origin == (redirectOriginOverride ?? Uri.base.origin)) {
+        final flutterWebAuthMessage = messageEvent.data['flutter-web-auth-2-logout'];
+        if (flutterWebAuthMessage is String) {
+          return flutterWebAuthMessage;
+        }
+      }
+      // final appleOrigin = Uri(scheme: 'https', host: 'appleid.apple.com');
+      // if (messageEvent.origin == appleOrigin.toString()) {
+      //   try {
+      //     final data = jsonDecode(messageEvent.data.toString());
+      //     if (data['method'] == 'oauthDone') {
+      //       final appleAuth = data['data']['authorization'] as Map<String, dynamic>?;
+      //       if (appleAuth != null) {
+      //         final appleAuthQuery = Uri(queryParameters: appleAuth).query;
+      //         return appleOrigin.replace(fragment: appleAuthQuery).toString();
+      //       }
+      //     }
+      //   } on FormatException {
+      //     // ignore exception
+      //   }
+      // }
     }
     throw PlatformException(
       code: 'error',
